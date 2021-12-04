@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gee_web"
 	"net/http"
 )
@@ -22,5 +23,31 @@ func main() {
 	engine.GET("/assets/*filepath", func(c *gee_web.Context) {
 		c.JSON(http.StatusOK, map[string]interface{}{"filepath": c.Param("filepath")})
 	})
+
+	group_test(engine)
+
 	engine.Run(":8080")
+}
+
+func group_test(engine *gee_web.Engine) {
+	engine.GET("/index", func(c *gee_web.Context) {
+		c.HTML(200, "<h1>Index Page</h1>")
+	})
+
+	v1 := engine.NewGroup("/v1")
+	{
+		v1.GET("/hello/:name", func(c *gee_web.Context) {
+			c.HTML(200, fmt.Sprintf("<h1>hello %s<h1>", c.Param("name")))
+		})
+	}
+
+	v2 := engine.NewGroup("/v2")
+	{
+		v2.POST("/login", func(c *gee_web.Context) {
+			c.JSON(200, map[string]interface{}{
+				"username": c.PostForm("username"),
+				"password": c.PostForm("password"),
+			})
+		})
+	}
 }

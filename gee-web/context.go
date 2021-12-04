@@ -9,11 +9,12 @@ import (
 type HandlerFunc func(*Context)
 
 type Context struct {
-	w http.ResponseWriter
-	r *http.Request
-	path string
+	w      http.ResponseWriter
+	r      *http.Request
+	path   string
 	method string
-	code int
+	params map[string]string
+	code   int
 }
 
 func newContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -23,6 +24,10 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 		path:   r.URL.Path,
 		method: r.Method,
 	}
+}
+
+func (c *Context) Param(key string) string {
+	return c.params[key]
 }
 
 func (c *Context) PostForm(key string) string {
@@ -39,7 +44,7 @@ func (c *Context) SetStatus(code int) {
 }
 
 func (c *Context) SetHeader(key string, value string) {
-	c.w.Header().Set(key ,value)
+	c.w.Header().Set(key, value)
 }
 
 func (c *Context) String(code int, format string, values ...interface{}) {

@@ -8,6 +8,9 @@ import (
 
 func main() {
 	engine := gee_web.New()
+
+	engine.Use(gee_web.Logger())
+
 	engine.GET("/", func(c *gee_web.Context) {
 		c.String(200, "hello %s", c.Query("name"))
 	})
@@ -25,6 +28,14 @@ func main() {
 	})
 
 	group_test(engine)
+
+	v3 := engine.NewGroup("/v3")
+	v3.Use(gee_web.Failed())
+	{
+		v3.GET("/hello/:name", func(c *gee_web.Context) {
+			c.String(200, "hello")
+		})
+	}
 
 	engine.Run(":8080")
 }

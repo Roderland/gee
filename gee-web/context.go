@@ -7,14 +7,17 @@ import (
 )
 
 type HandlerFunc func(*Context)
+type H map[string]interface{}
 
 type Context struct {
-	w      http.ResponseWriter
-	r      *http.Request
-	path   string
-	method string
-	params map[string]string
-	code   int
+	w        http.ResponseWriter
+	r        *http.Request
+	path     string
+	method   string
+	params   map[string]string
+	code     int
+	handlers []HandlerFunc
+	index    int
 }
 
 func newContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -23,6 +26,15 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 		r:      r,
 		path:   r.URL.Path,
 		method: r.Method,
+		index:  -1,
+	}
+}
+
+func (c *Context) Next() {
+	c.index++
+	s := len(c.handlers)
+	for ; c.index < s; c.index++ {
+		c.handlers[c.index](c)
 	}
 }
 
@@ -71,4 +83,9 @@ func (c *Context) HTML(code int, html string) {
 	c.SetHeader("Content-Type", "text/html")
 	c.SetStatus(code)
 	c.w.Write([]byte(html))
+}
+
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
 }

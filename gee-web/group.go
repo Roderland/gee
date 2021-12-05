@@ -18,6 +18,10 @@ func (g *Group) NewGroup(prefix string) *Group {
 	return newGroup
 }
 
+func (g *Group) Use(middlewares ...HandlerFunc) {
+	g.middlewares = append(g.middlewares, middlewares...)
+}
+
 func (g *Group) addRoute(method string, comp string, handler HandlerFunc) {
 	pattern := g.prefix + comp
 	g.engine.router.addRoute(method, pattern, handler)

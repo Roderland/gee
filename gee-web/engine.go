@@ -2,6 +2,7 @@ package gee_web
 
 import (
 	"net/http"
+	"strings"
 )
 
 type Engine struct {
@@ -18,7 +19,14 @@ func New() *Engine {
 }
 
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var middlewares []HandlerFunc
+	for _, group := range e.groups {
+		if strings.HasPrefix(r.URL.Path, group.prefix) {
+			middlewares = append(middlewares, group.middlewares...)
+		}
+	}
 	context := newContext(w, r)
+	context.handlers = middlewares
 	e.router.handle(context)
 }
 

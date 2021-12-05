@@ -18,6 +18,7 @@ type Context struct {
 	code     int
 	handlers []HandlerFunc
 	index    int
+	engine   *Engine
 }
 
 func newContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -79,10 +80,13 @@ func (c *Context) Data(code int, data []byte) {
 	c.w.Write(data)
 }
 
-func (c *Context) HTML(code int, html string) {
+func (c *Context) HTML(code int, name string, data interface{}) {
 	c.SetHeader("Content-Type", "text/html")
 	c.SetStatus(code)
-	c.w.Write([]byte(html))
+	h := c.engine.htmlTemplates
+	if err := h.ExecuteTemplate(c.w, name, data); err != nil {
+		c.Fail(500, err.Error())
+	}
 }
 
 func (c *Context) Fail(code int, err string) {

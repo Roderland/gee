@@ -1,14 +1,17 @@
 package gee_web
 
 import (
+	"html/template"
 	"net/http"
 	"strings"
 )
 
 type Engine struct {
 	*Group
-	router *router
-	groups []*Group
+	router        *router
+	groups        []*Group
+	htmlTemplates *template.Template
+	funcMap       template.FuncMap
 }
 
 func New() *Engine {
@@ -27,7 +30,16 @@ func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	context := newContext(w, r)
 	context.handlers = middlewares
+	context.engine = e
 	e.router.handle(context)
+}
+
+func (e *Engine) SetFuncMap(funcMap template.FuncMap) {
+	e.funcMap = funcMap
+}
+
+func (e *Engine) LoadHtmlGlob(pattern string) {
+	e.htmlTemplates = template.Must(template.New("").Funcs(e.funcMap).ParseGlob(pattern))
 }
 
 func (e *Engine) addRoute(method string, pattern string, handler HandlerFunc) {

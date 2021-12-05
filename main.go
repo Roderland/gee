@@ -3,62 +3,47 @@ package main
 import (
 	"fmt"
 	"gee_web"
-	"net/http"
+	"html/template"
+	"time"
 )
 
 func main() {
 	engine := gee_web.New()
-
 	engine.Use(gee_web.Logger())
 
+	engine.SetFuncMap(template.FuncMap{
+		"FormatAsDate": FormatAsDate,
+	})
+	engine.LoadHtmlGlob("templates/*")
+	engine.Static("/assets", "./static")
+	stu1 := &student{"wg1", 18}
+	stu2 := &student{"wg2", 20}
+
 	engine.GET("/", func(c *gee_web.Context) {
-		c.String(200, "hello %s", c.Query("name"))
+		c.HTML(200, "css.tmpl", nil)
 	})
-	engine.POST("/login", func(c *gee_web.Context) {
-		c.JSON(200, map[string]interface{}{
-			"username": c.PostForm("username"),
-			"password": c.PostForm("password"),
+	engine.GET("/students", func(c *gee_web.Context) {
+		c.HTML(200, "arr.tmpl", gee_web.H{
+			"title":  "gee",
+			"stuArr": [2]*student{stu1, stu2},
 		})
 	})
-	engine.GET("/hello/:name", func(c *gee_web.Context) {
-		c.String(http.StatusOK, "hello %s\n", c.Param("name"))
-	})
-	engine.GET("/assets/*filepath", func(c *gee_web.Context) {
-		c.JSON(http.StatusOK, map[string]interface{}{"filepath": c.Param("filepath")})
-	})
-
-	group_test(engine)
-
-	v3 := engine.NewGroup("/v3")
-	v3.Use(gee_web.Failed())
-	{
-		v3.GET("/hello/:name", func(c *gee_web.Context) {
-			c.String(200, "hello")
+	engine.GET("/date", func(c *gee_web.Context) {
+		c.HTML(200, "custom_func.tmpl", gee_web.H{
+			"title": "gee",
+			"now":   time.Now(),
 		})
-	}
+	})
 
 	engine.Run(":8080")
 }
 
-func group_test(engine *gee_web.Engine) {
-	engine.GET("/index", func(c *gee_web.Context) {
-		c.HTML(200, "<h1>Index Page</h1>")
-	})
+type student struct {
+	Name string
+	Age  int8
+}
 
-	v1 := engine.NewGroup("/v1")
-	{
-		v1.GET("/hello/:name", func(c *gee_web.Context) {
-			c.HTML(200, fmt.Sprintf("<h1>hello %s<h1>", c.Param("name")))
-		})
-	}
-
-	v2 := engine.NewGroup("/v2")
-	{
-		v2.POST("/login", func(c *gee_web.Context) {
-			c.JSON(200, map[string]interface{}{
-				"username": c.PostForm("username"),
-				"password": c.PostForm("password"),
-			})
-		})
-	}
+func FormatAsDate(t time.Time) string {
+	year, month, day := t.Date()
+	return fmt.Sprintf("%d-%02d-%02d", year, month, day)
 }

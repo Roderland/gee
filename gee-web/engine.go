@@ -21,6 +21,12 @@ func New() *Engine {
 	return engine
 }
 
+func Default() *Engine {
+	engine := New()
+	engine.Use(Logger(), Recovery())
+	return engine
+}
+
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var middlewares []HandlerFunc
 	for _, group := range e.groups {

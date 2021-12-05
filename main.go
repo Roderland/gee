@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"gee_web"
 	"html/template"
+	"net/http"
 	"time"
 )
 
 func main() {
-	engine := gee_web.New()
-	engine.Use(gee_web.Logger())
+	engine := gee_web.Default()
 
 	engine.SetFuncMap(template.FuncMap{
 		"FormatAsDate": FormatAsDate,
@@ -33,6 +33,11 @@ func main() {
 			"title": "gee",
 			"now":   time.Now(),
 		})
+	})
+
+	engine.GET("/panic", func(c *gee_web.Context) {
+		names := []string{"geektutu"}
+		c.String(http.StatusOK, names[100])
 	})
 
 	engine.Run(":8080")

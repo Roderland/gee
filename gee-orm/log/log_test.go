@@ -1,12 +1,13 @@
-package main
+package log
 
 import (
 	"fmt"
+	"gee_orm"
 	"testing"
 )
 
 func TestName(t *testing.T) {
-	engine, _ := NewEngine("sqlite3", "gee.db")
+	engine, _ := gee_orm.NewEngine("sqlite3", "gee.db")
 	defer engine.Close()
 	s := engine.NewSession()
 	_, _ = s.Raw("DROP TABLE IF EXISTS User;").Exec()

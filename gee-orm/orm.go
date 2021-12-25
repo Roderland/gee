@@ -1,33 +1,44 @@
-package main
+package gee_orm
 
-import "database/sql"
+import (
+	"database/sql"
+	"gee_orm/dialect"
+	"gee_orm/log"
+	"gee_orm/session"
+)
 
 type Engine struct {
-	db *sql.DB
+	db      *sql.DB
+	dialect dialect.Dialect
 }
 
 func NewEngine(driver, source string) (e *Engine, err error) {
 	db, err := sql.Open(driver, source)
 	if err != nil {
-		Error(err)
+		log.Error(err)
 		return
 	}
 	if err = db.Ping(); err != nil {
-		Error(err)
+		log.Error(err)
 		return
 	}
-	e = &Engine{db: db}
-	Info("Connect database success")
+	dial, ok := dialect.GetDialect(driver)
+	if !ok {
+		log.Errorf("dialect %s Not Found", driver)
+		return
+	}
+	e = &Engine{db: db, dialect: dial}
+	log.Info("Connect database success")
 	return
 }
 
 func (e *Engine) Close() {
 	if err := e.db.Close(); err != nil {
-		Error("Failed to close database")
+		log.Error("Failed to close database")
 	}
-	Info("Close database success")
+	log.Info("Close database success")
 }
 
-func (e *Engine) NewSession() *Session {
-	return New(e.db)
+func (e *Engine) NewSession() *session.Session {
+	return session.New(e.db, e.dialect)
 }

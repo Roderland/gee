@@ -1,10 +1,13 @@
-package main
+package gee_orm
 
 import (
 	"database/sql"
+	"testing"
+)
+
+import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
-	"testing"
 )
 
 func TestDB(t *testing.T) {

@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-type sqlite3 struct {
+type Sqlite3 struct {
 }
 
-var _ Dialect = (*sqlite3)(nil)
+var _ Dialect = (*Sqlite3)(nil)
 
 func init() {
-	RegisterDialect("sqlite3", &sqlite3{})
+	RegisterDialect("sqlite3", &Sqlite3{})
 }
 
-func (s *sqlite3) DataTypeOf(typ reflect.Value) string {
+func (s *Sqlite3) DataTypeOf(typ reflect.Value) string {
 	switch typ.Kind() {
 	case reflect.Bool:
 		return "bool"
@@ -38,7 +38,7 @@ func (s *sqlite3) DataTypeOf(typ reflect.Value) string {
 	panic(fmt.Sprintf("invalid sql type %s (%s)", typ.Type().Name(), typ.Kind()))
 }
 
-func (s *sqlite3) TableExistSQL(tableName string) (string, []interface{}) {
+func (s *Sqlite3) TableExistSQL(tableName string) (string, []interface{}) {
 	args := []interface{}{tableName}
 	return "SELECT name FROM sqlite_master WHERE type='table' and name = ?", args
 }
